@@ -2,6 +2,10 @@ import json
 import logging
 from flask import request, Flask
 import random
+import re
+
+NUM_REGEXP = '\-?[0-9]+(\.[0-9]+)?'
+NUM_REGEXP_COMPILED = re.compile(NUM_REGEXP)
 
 app = Flask(__name__)
 
@@ -9,39 +13,31 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 @app.route("/", methods=['POST'])
-def main():
-    logging.info('Request: %r', request.json)
-    response = {
-        "version": request.json['version'],
-        "session": request.json['session'],
-        "response": {
-            "end_session": False
-        }
-    }
+def handle_random(req, res):
+    req_body = req.json
 
-    handle_dialog(request.json, response)
+    if not __is_body_valid(req_body):
+        return json.dumps(
+            {'message': 'invalid request body'}
+        ), 400
 
-    logging.info('Response: %r', response)
-    return json.dumps(
-        response,
-        ensure_ascii=False,
-        indent=2
-    )
+    a = req_body['a']
+    b = req_body['b']
+    rand_num = random.randint(a, b)
+
+    return json.dumps({'number': rand_num})
 
 
-def handle_dialog(req, res):
-    user_id = req['session']['user_id']
-    if req['session']['new']:
-        res['response']['text'] = 'Привет, я рандомайзер) \n Задайте диапазон случайного числа (Х, Y). \n Веедите ' \
-                                  'число X. '
+def __is_body_valid(req_body) -> bool:
+    a_ok = __is_number(req_body['a'])
+    b_ok = __is_number(req_body['b'])
 
-    if not req['request']['original_utterance'].isdigit():
-        res['response']['text'] = 'Ошибка, введите еще раз'
+    return 'a' in req_body and 'b' in req_body and a_ok and b_ok
 
-    x = req['request']['original_utterance']
 
-    res['response']['text'] = 'Веедите число Y.'
+def __is_number(num) -> bool:
+    return NUM_REGEXP_COMPILED.fullmatch(num) is not None
 
-    y = req['request']['original_utterance']
 
-    res['response']['text'] = random.randint(x, y)
+if __name__ == '__main__':
+    app.run()
