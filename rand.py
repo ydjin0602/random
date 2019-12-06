@@ -13,19 +13,19 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 @app.route("/", methods=['POST'])
-def handle_random(req, res):
-    req_body = req.json
+def handle_random():
+    req_body = request.json
 
     if not __is_body_valid(req_body):
         return json.dumps(
             {'message': 'invalid request body'}
         ), 400
 
-    a = req_body['a']
-    b = req_body['b']
+    a = int(req_body['a'])
+    b = int(req_body['b'])
     rand_num = random.randint(a, b)
 
-    return json.dumps({'number': rand_num})
+    return json.dumps(rand_num)
 
 
 def __is_body_valid(req_body) -> bool:
