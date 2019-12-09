@@ -1,5 +1,4 @@
 import json
-import logging
 from flask import request, Flask
 import random
 import re
@@ -8,8 +7,6 @@ NUM_REGEXP = '\-?[0-9]+(\.[0-9]+)?'
 NUM_REGEXP_COMPILED = re.compile(NUM_REGEXP)
 
 app = Flask(__name__)
-
-logging.basicConfig(level=logging.DEBUG)
 
 
 @app.route("/", methods=['POST'])
